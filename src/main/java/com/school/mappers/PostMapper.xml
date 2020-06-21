@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.school.dao.PostMapper" >
+  <resultMap id="BaseResultMap" type="com.school.vo.Post" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="title" property="title" jdbcType="VARCHAR" />
+    <result column="describes" property="describes" jdbcType="VARCHAR" />
+    <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="uid" property="uid" jdbcType="INTEGER" />
+    <result column="post_type_id" property="postTypeId" jdbcType="INTEGER" />
+    <result column="flag" property="flag" jdbcType="INTEGER" />
+    <result column="like_num" property="likeNum" jdbcType="INTEGER" />
+    <result column="look_num" property="lookNum" jdbcType="INTEGER" />
+    <result column="com_num" property="comNum" jdbcType="INTEGER" />
+    <result column="picture" property="picture" jdbcType="VARCHAR" />
+    <association property="user" javaType="User">
+      <id property="id" column="uid"/>
+      <result property="headImage" column="head_image"/>
+      <result property="userName" column="user_name"/>
+    </association>
+    <collection property="headImages" ofType="string" javaType="java.util.List">
+      <result column="headImages"/>
+    </collection>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, title, describes, create_date, uid, post_type_id, flag, like_num, look_num, com_num,
+    picture
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from post
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <select id="selectPost" parameterType="com.school.vo.Post" resultType="com.school.vo.Post">
+    select
+    <include refid="Base_Column_List" />
+    from post
+    <where>
+      <if test="id != null" >
+        id = #{id,jdbcType=INTEGER}
+      </if>
+      <if test="title != null" >
+        and title = #{title,jdbcType=VARCHAR}
+      </if>
+      <if test="createDate != null" >
+        and create_date = #{createDate,jdbcType=TIMESTAMP}
+      </if>
+      <if test="uid != null" >
+        and uid = #{uid,jdbcType=INTEGER}
+      </if>
+      <if test="postTypeId != null and postTypeId != ''" >
+        and post_type_id = #{postTypeId,jdbcType=INTEGER}
+      </if>
+      <if test="flag != null" >
+        and flag = #{flag,jdbcType=INTEGER}
+      </if>
+    </where>
+  </select>
+
+ <!-- <select id="selectPostPage" parameterType="com.school.vo.Post" resultMap="BaseResultMap">
+    SELECT * FROM post p,
+    (SELECT u.head_image headImages,l.post_id FROM user u RIGHT JOIN like_post l ON u.id = l.uid) a
+    <where>
+      p.id = a.post_id
+      <if test="title != null" >
+        and p.title = #{title,jdbcType=VARCHAR}
+      </if>
+      <if test="createDate != null" >
+        and p.create_date = #{createDate,jdbcType=TIMESTAMP}
+      </if>
+      <if test="uid != null" >
+        and p.uid = #{uid,jdbcType=INTEGER}
+      </if>
+      <if test="postTypeId != null" >
+        and p.post_type_id = #{postTypeId,jdbcType=INTEGER}
+      </if>
+      <if test="flag != null" >
+        and p.flag = #{flag,jdbcType=INTEGER}
+      </if>
+      and p.flag = 1
+    </where>
+
+  </select>-->
+  <select id="selectPostPage" parameterType="com.school.vo.Post" resultMap="BaseResultMap">
+    SELECT w.*,v.like_num,v.com_num FROM (SELECT a.*,user.head_image,user.user_name FROM user,
+    (SELECT * FROM post p,
+    (SELECT u.head_image headImages,l.post_id FROM user u RIGHT JOIN like_post l ON u.id = l.uid) a
+    <where>
+      p.id = a.post_id
+      <if test="title != null" >
+        and p.title = #{title,jdbcType=VARCHAR}
+      </if>
+      <if test="createDate != null" >
+        and p.create_date = #{createDate,jdbcType=TIMESTAMP}
+      </if>
+      <if test="uid != null" >
+        and p.uid = #{uid,jdbcType=INTEGER}
+      </if>
+      <if test="postTypeId != null and postTypeId != '' " >
+        and p.post_type_id = #{postTypeId,jdbcType=INTEGER}
+      </if>
+      <if test="flag != null" >
+        and p.flag = #{flag,jdbcType=INTEGER}
+      </if>
+      and p.flag = 1
+    </where>) a WHERE user.id = a.uid) w LEFT JOIN
+    (SELECT m.*,n.com_num FROM (SELECT count(1) like_num,like_post.post_id id FROM like_post GROUP BY like_post.post_id ) m LEFT JOIN
+    (SELECT count(1) com_num,comment.topic_id id  FROM comment GROUP BY comment.topic_id) n ON m.id = n.id) v
+    ON w.id = v.id
+
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from post
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.school.vo.Post" >
+    insert into post
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="title != null" >
+        title,
+      </if>
+      <if test="describes != null" >
+        describes,
+      </if>
+      <if test="createDate != null" >
+        create_date,
+      </if>
+      <if test="uid != null" >
+        uid,
+      </if>
+      <if test="postTypeId != null" >
+        post_type_id,
+      </if>
+      <if test="flag != null" >
+        flag,
+      </if>
+      <if test="likeNum != null" >
+        like_num,
+      </if>
+      <if test="lookNum != null" >
+        look_num,
+      </if>
+      <if test="comNum != null" >
+        com_num,
+      </if>
+      <if test="picture != null" >
+        picture,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="title != null" >
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="describes != null" >
+        #{describes,jdbcType=VARCHAR},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="uid != null" >
+        #{uid,jdbcType=INTEGER},
+      </if>
+      <if test="postTypeId != null" >
+        #{postTypeId,jdbcType=INTEGER},
+      </if>
+      <if test="flag != null" >
+        #{flag,jdbcType=INTEGER},
+      </if>
+      <if test="likeNum != null" >
+        #{likeNum,jdbcType=INTEGER},
+      </if>
+      <if test="lookNum != null" >
+        #{lookNum,jdbcType=INTEGER},
+      </if>
+      <if test="comNum != null" >
+        #{comNum,jdbcType=INTEGER},
+      </if>
+      <if test="picture != null" >
+        #{picture,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.school.vo.Post" >
+    update post
+    <set >
+      <if test="title != null" >
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="describes != null" >
+        describes = #{describes,jdbcType=VARCHAR},
+      </if>
+      <if test="postTypeId != null" >
+        post_type_id = #{postTypeId,jdbcType=INTEGER},
+      </if>
+      <if test="flag != null" >
+        flag = #{flag,jdbcType=INTEGER},
+      </if>
+      <if test="likeNum != null" >
+        like_num = #{likeNum,jdbcType=INTEGER},
+      </if>
+      <if test="lookNum != null" >
+        look_num = #{lookNum,jdbcType=INTEGER},
+      </if>
+      <if test="comNum != null" >
+        com_num = #{comNum,jdbcType=INTEGER},
+      </if>
+      <if test="picture != null" >
+        picture = #{picture,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectAllId" resultType="int" parameterType="java.lang.Integer">
+    SELECT id FROM post WHERE post.uid = #{id,jdbcType=INTEGER}
+  </select>
+  <update id="updateMany">
+    update post set flag = 0
+    where id in
+    <foreach collection="array" open="(" close=")" separator="," item="item">
+      #{item}
+    </foreach>
+  </update>
+  <insert id="insertlike">
+    insert into like_post (uid, post_id) values (#{uid},#{post_id})
+  </insert>
+</mapper>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.school.dao.ProductOrdersMapper" >
+  <resultMap id="BaseResultMap" type="com.school.vo.ProductOrders" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="order_no" property="orderNo" jdbcType="VARCHAR" />
+    <result column="uid" property="uid" jdbcType="INTEGER" />
+    <result column="order_status" property="orderStatus" jdbcType="VARCHAR" />
+    <result column="goods_money" property="goodsMoney" jdbcType="DOUBLE" />
+    <result column="user_name" property="userName" jdbcType="VARCHAR" />
+    <result column="user_address" property="userAddress" jdbcType="VARCHAR" />
+    <result column="user_phone" property="userPhone" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="flag" property="flag" jdbcType="VARCHAR" />
+    <result column="pid" property="pid" jdbcType="INTEGER" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, order_no, uid, order_status, goods_money, user_name, user_address, user_phone, 
+    create_time, flag, pid
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from goods_orders
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from goods_orders
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <select id="selectOrderPage" parameterType="ProductOrders" resultType="com.school.vo.ProductOrders">
+    SELECT a.*,b.title from goods_orders a LEFT JOIN goods b on a.pid = b.id
+    <where>
+      <if test="uid != null" >
+        a.uid = #{uid,jdbcType=INTEGER}
+      </if>
+    </where>
+/*    select *
+    from goods_orders*/
+  </select>
+  <select id="selectALLPage" parameterType="ProductOrders" resultType="com.school.vo.ProductOrders">
+    SELECT a.*,goods.title FROM (SELECT * FROM goods_orders
+    WHERE goods_orders.pid in (SELECT id from goods
+    <where>
+      <if test="uid != null" >
+        uid = #{uid,jdbcType=INTEGER}
+      </if>
+    </where>)) a
+    LEFT JOIN goods on a.pid = goods.id
+
+    /*    select *
+    from goods_orders*/
+  </select>
+  <insert id="insertSelective" parameterType="com.school.vo.ProductOrders" >
+    insert into goods_orders
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="orderNo != null" >
+        order_no,
+      </if>
+      <if test="uid != null" >
+        uid,
+      </if>
+      <if test="orderStatus != null" >
+        order_status,
+      </if>
+      <if test="goodsMoney != null" >
+        goods_money,
+      </if>
+      <if test="userName != null" >
+        user_name,
+      </if>
+      <if test="userAddress != null" >
+        user_address,
+      </if>
+      <if test="userPhone != null" >
+        user_phone,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="flag != null" >
+        flag,
+      </if>
+      <if test="pid != null" >
+        pid,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="orderNo != null" >
+        #{orderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="uid != null" >
+        #{uid,jdbcType=INTEGER},
+      </if>
+      <if test="orderStatus != null" >
+        #{orderStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsMoney != null" >
+        #{goodsMoney,jdbcType=DOUBLE},
+      </if>
+      <if test="userName != null" >
+        #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="userAddress != null" >
+        #{userAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="userPhone != null" >
+        #{userPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="flag != null" >
+        #{flag,jdbcType=VARCHAR},
+      </if>
+      <if test="pid != null" >
+        #{pid,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.school.vo.ProductOrders" >
+    update goods_orders
+    <set >
+      <if test="uid != null" >
+        uid = #{uid,jdbcType=INTEGER},
+      </if>
+      <if test="orderStatus != null" >
+        order_status = #{orderStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="flag != null" >
+        flag = #{flag,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <where>
+      <if test="id != null" >
+        id = #{id,jdbcType=INTEGER}
+      </if>
+      <if test="orderNo != null" >
+        and order_no = #{orderNo,jdbcType=VARCHAR}
+      </if>
+    </where>
+  </update>
+  <update id="updateGoodsFlag" parameterType="com.school.vo.ProductOrders">
+    UPDATE goods SET goods.flag = 2 WHERE id = (SELECT goods_orders.pid FROM goods_orders WHERE order_no = #{orderNo,jdbcType=VARCHAR})
+  </update>
+</mapper>
